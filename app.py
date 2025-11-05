@@ -11,7 +11,7 @@ st.set_page_config(layout="wide")
 
 def main():
 
-    tab1 = st.tabs("Game Analysis Kicking")
+    tab1, = st.tabs(["Game Analysis Kicking"])
 
     with tab1:
         
