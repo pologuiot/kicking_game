@@ -714,7 +714,7 @@ def from_df_match_to_kicking_game(df_match :pd.DataFrame) -> pd.DataFrame :
     
     
     list_columns_to_keep_opta = ["Start time","Player","Match Time","Period","Row","Kick Types"]
-    list_columns_to_keep_analyst = ["Start time","Joueurs","Mi temps","Qualite de JAP"]
+    list_columns_to_keep_analyst = ["Start time","Joueurs","Mi temps","Résultat"]
     
     for c1 in list_columns_to_keep_opta :
         if c1 not in  df_match.columns :
@@ -807,7 +807,7 @@ def from_df_match_to_kicking_game(df_match :pd.DataFrame) -> pd.DataFrame :
 
     # Création de df3
     df3 = df1_sorted.copy()
-    df3['Résultat_Color'] = np.select([df3['Qualite de JAP'] == 'Positif'],["#008001"],default="darkred")
+    df3['Résultat_Color'] = np.select([df3['Résultat'] == 'Positif'],["#008001"],default="darkred")
     df3["Match Time"] = match_time_list
     df3["delta"] = delta_list
     df3["Player (OPTA)"] = player_opta_list
@@ -820,13 +820,13 @@ def from_df_match_to_kicking_game(df_match :pd.DataFrame) -> pd.DataFrame :
     # NETTOYAGE DES DONNEES :
     # ... raccourcir la partie décimale de 'Start time'
     df3[time_analyst] = round(df3[time_analyst],2)
-    # ... Supprimer la ligne si "Qualite de JAP" == NaN
-    df3 = df3.dropna(subset=["Qualite de JAP"])
+    # ... Supprimer la ligne si "Résultat de JAP" == NaN
+    df3 = df3.dropna(subset=["Résultat"])
     # ... Si la valeur "Joueurs" possède une "," alors prendre la valeur "Player (OPTA)"
     # df3["Joueurs"] = df3["Joueurs"].astype(str)
     # df3.loc[df3["Joueurs"].str.contains(",", na=False), "Joueurs"] = df3["Player (OPTA)"]
     # ... Réorganiser les colonnes :
-    cols = ["Match Time","Match_Time_2","Minutes","Secondes","Qualite de JAP","Résultat_Color","Start time","Star time (OPTA)","delta","Correspondance Joueur","Joueurs","Player (OPTA)","Mi temps"]
+    cols = ["Match Time","Match_Time_2","Minutes","Secondes","Résultat","Résultat_Color","Start time","Star time (OPTA)","delta","Correspondance Joueur","Joueurs","Player (OPTA)","Mi temps"]
     df3 = df3[cols]
         
     return df3
