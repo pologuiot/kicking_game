@@ -6,6 +6,7 @@ import warnings
 import re
 from io import BytesIO
 import zipfile
+import math
 
 import matplotlib.pyplot as plt
 
@@ -881,11 +882,22 @@ def extraction_df_point_game(big_df) :
 
 def gametime_graph3(df_match_graph):
     
+    # CREATION DATAFRAME POINT et DATAFRAME KICK
     df_point_game = extraction_df_point_game(df_match_graph)
     df_kicking_game = from_df_match_to_kicking_game(df_match_graph)
     
-    fig, ax = plt.subplots(figsize=(15,6))  # Create figure and axis
+    # CALCUL DU TIMING DE LA FIN DU MATCH PAR RAPPORT AUX POINTS
+    max_time_point = max(80.0 , df_point_game["Match_Time_2"].max() )
+    max_time_graph = (math.ceil(max_time_point)) if ((int(max_time_point) != max_time_point) 
+                                                    | (80.0 > df_point_game["Match_Time_2"].max())) else max_time_point + 1
     
+    # CALCUL DU TIMING DE LA MI-TEMPS PAR RAPPORT AUX COUPS DE PIED
+    half_time = 40
+    if df_kicking_game[df_kicking_game["Mi temps"]== "1" ].iloc[-1]['Match_Time_2'] > 40.0 :
+        half_time = (df_kicking_game[df_kicking_game["Mi temps"]== "1" ].iloc[-1]['Match_Time_2'] +
+                     df_kicking_game[df_kicking_game["Mi temps"]== "2" ].iloc[0]['Match_Time_2'])/2.0
+    
+    fig, ax = plt.subplots(figsize=(15,6))  # Create figure and axis
     titre = df_match_graph.iloc[0]["Timeline"]
 
     # Ajouter le point initial pour partir de y=0
@@ -893,7 +905,7 @@ def gametime_graph3(df_match_graph):
     y = [0] + df_point_game['evolution_score'].tolist()
 
     # Ajouter un dernier point pour continuer jusqu'à x = 80
-    x.append(80)
+    x.append(max_time_graph)
     y.append(y[-1])  # même niveau que le dernier score
 
     # Tracé en escalier
@@ -917,7 +929,7 @@ def gametime_graph3(df_match_graph):
     ax.axhspan(ymax = 0, ymin = - limit, xmin=0, xmax=80, facecolor='darkred', alpha=0.15)
     ax.scatter(df_kicking_game['Match_Time_2'],[0 for value in df_kicking_game['Match_Time_2']],s=100,color=df_kicking_game['Résultat_Color'])
 
-    ax.set_xlim(-1,81)
+    ax.set_xlim(-1,max_time_graph+1)
     ax.set_ylim(-limit,limit) 
     
    
@@ -932,9 +944,12 @@ def gametime_graph3(df_match_graph):
     yticks = yticks[np.abs(yticks) <= limit]
     ax.set_yticks(yticks)
     
-    for y in yticks:
-        if y != 0 :
-            ax.axhline(y=y, color='gray', linestyle='--', linewidth=0.5, alpha=0.5)
+    for yi in yticks:
+        if yi != 0 :
+            ax.axhline(y=yi, color='gray', linestyle='--', linewidth=0.5, alpha=0.5)
+            
+    for xi in [0,half_time,80] :
+        ax.axvline(x=xi, color='gray', linestyle='--', linewidth=0.5, alpha=0.5)
 
     
     ax.spines['left'].set_visible(False)
