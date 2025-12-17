@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import io
 from PIL import Image
 import numpy as np
-
+ 
 st.set_page_config(layout="wide")
 
 def main():
@@ -25,7 +25,7 @@ def main():
 
             check = st.checkbox("GameTime Graphics")
             
-            df = pd.read_csv(uploaded_file)
+            df = pd.read_csv(uploaded_file,low_memory=False)
 
             joueurs_racing = list(df[df.Row == "Jeu au pied Racing"].Joueurs.unique())
 
