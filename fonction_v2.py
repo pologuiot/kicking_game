@@ -834,7 +834,7 @@ def from_df_match_to_kicking_game(df_match :pd.DataFrame) -> pd.DataFrame :
 
 def extraction_df_point_game(big_df) :
     
-    list_columns_to_keep = ["Row", "Match Time", "Event", "Goal Kick Type"]
+    list_columns_to_keep = ["Row", "Match Time", "Event", "Goal Kick Outcome", "Goal Kick Type"]
     
     for c1 in list_columns_to_keep :
         if c1 not in  big_df.columns :
@@ -842,7 +842,7 @@ def extraction_df_point_game(big_df) :
     
     
     # EXTRACTION DES COLONNES NECESSAIRES DU DATAFRAME DU MATCH
-    list_columns_to_keep = ["Row", "Match Time", "Event", "Goal Kick Type"]
+    list_columns_to_keep = ["Row", "Match Time", "Event", "Goal Kick Outcome", "Goal Kick Type"]
     df_point_game = big_df[((big_df["Event"]=="Try") | ((big_df["Event"]=="Goal Kick") & (big_df["Goal Kick Outcome"] == "Goal Kicked" ))) & (big_df["Row"].str.contains("Tries|Kicks", na=False)) ].reset_index(drop=True)
     df_point_game = df_point_game[list_columns_to_keep]
     
