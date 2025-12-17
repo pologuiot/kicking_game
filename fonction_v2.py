@@ -676,31 +676,36 @@ def from_match_time_to_min_and_sec(df_already_reduced : pd.DataFrame) -> pd.Data
         
         # Rendre la colonne "Match Time" traitable 
         df_fonction = df_fonction.sort_values("Match Time").reset_index(drop=True) # Trie + réinitialisation des index
-        df_fonction["Match Time"] = df_fonction["Match Time"].astype(int) # Match Time = 3245.0 -> Match Time = 3245
+        df_fonction["Match Time"] = df_fonction["Match Time"].astype("Int64") # Match Time = 3245.0 -> Match Time = 3245
         df_fonction["Match Time"] = df_fonction["Match Time"].astype('string')
         
         for i in range(len(df_fonction)) :
             
+            val = df_fonction.loc[i, "Match Time"]
+            if pd.notna(val) :
             # Match Time à 2 chiffres ou moins <=> 0 minute 
-            if len(df_fonction.loc[i, "Match Time"]) <= 2 :
-                df_fonction.loc[i, "Minutes"] = 0
-                df_fonction.loc[i, "Secondes"] = df_fonction.loc[i, "Match Time"][0:2]
-            # Match Time à 3 chiffres  <=> 1 minute <= Match Time < 10 minutes
-            elif len(df_fonction.loc[i, "Match Time"]) == 3 :
-                df_fonction.loc[i, "Minutes"] = df_fonction.loc[i, "Match Time"][0:1]
-                df_fonction.loc[i, "Secondes"] = df_fonction.loc[i, "Match Time"][1:3]
-            # Match Time à 4 chiffres  <=> 10 minutes <= Match Time < 100 minutes
-            elif len(df_fonction.loc[i, "Match Time"]) == 4 :
-                df_fonction.loc[i, "Minutes"] = df_fonction.loc[i, "Match Time"][0:2]
-                df_fonction.loc[i, "Secondes"] = df_fonction.loc[i, "Match Time"][2:4]
-            # Match Time à 5 chiffres  <=> 100 minutes <= Match Time
-            elif len(df_fonction.loc[i, "Match Time"]) == 5 :
-                df_fonction.loc[i, "Minutes"] = df_fonction.loc[i, "Match Time"][0:3]
-                df_fonction.loc[i, "Secondes"] = df_fonction.loc[i, "Match Time"][3:5]
-                
-        df_fonction['Minutes'] = pd.to_numeric(df_fonction['Minutes'], errors='coerce').astype(int)
-        df_fonction['Secondes'] = pd.to_numeric(df_fonction['Secondes'], errors='coerce').astype(int)
-        df_fonction['Match_Time_2'] = df_fonction['Minutes'] + round(df_fonction['Secondes']/60.0 , 2)
+                if len(df_fonction.loc[i, "Match Time"]) <= 2 :
+                    df_fonction.loc[i, "Minutes"] = 0
+                    df_fonction.loc[i, "Secondes"] = df_fonction.loc[i, "Match Time"][0:2]
+                # Match Time à 3 chiffres  <=> 1 minute <= Match Time < 10 minutes
+                elif len(df_fonction.loc[i, "Match Time"]) == 3 :
+                    df_fonction.loc[i, "Minutes"] = df_fonction.loc[i, "Match Time"][0:1]
+                    df_fonction.loc[i, "Secondes"] = df_fonction.loc[i, "Match Time"][1:3]
+                # Match Time à 4 chiffres  <=> 10 minutes <= Match Time < 100 minutes
+                elif len(df_fonction.loc[i, "Match Time"]) == 4 :
+                    df_fonction.loc[i, "Minutes"] = df_fonction.loc[i, "Match Time"][0:2]
+                    df_fonction.loc[i, "Secondes"] = df_fonction.loc[i, "Match Time"][2:4]
+                # Match Time à 5 chiffres  <=> 100 minutes <= Match Time
+                elif len(df_fonction.loc[i, "Match Time"]) == 5 :
+                    df_fonction.loc[i, "Minutes"] = df_fonction.loc[i, "Match Time"][0:3]
+                    df_fonction.loc[i, "Secondes"] = df_fonction.loc[i, "Match Time"][3:5]
+            else :
+                df_fonction.loc[i, "Minutes"] = pd.NA
+                df_fonction.loc[i, "Secondes"] = pd.NA
+
+        df_fonction['Minutes'] = pd.to_numeric(df_fonction['Minutes'], errors='coerce').astype("Int64")
+        df_fonction['Secondes'] = pd.to_numeric(df_fonction['Secondes'], errors='coerce').astype("Int64")
+        df_fonction['Match_Time_2'] = (df_fonction['Minutes'].fillna(0) + df_fonction['Secondes'].fillna(0) / 60.0).round(2)
     
         return df_fonction
     
