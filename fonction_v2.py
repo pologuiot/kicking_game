@@ -833,6 +833,14 @@ def from_df_match_to_kicking_game(df_match :pd.DataFrame) -> pd.DataFrame :
     # ... Réorganiser les colonnes :
     cols = ["Match Time","Match_Time_2","Minutes","Secondes","Résultat","Résultat_Color","Start time","Star time (OPTA)","delta","Correspondance Joueur","Joueurs","Player (OPTA)","Mi temps"]
     df3 = df3[cols]
+
+    
+    df3["ordonne_graph"] = None  
+    for i in range(len(df3)) :
+        if (i%2 != 0) :
+            df3.loc[i, "ordonne_graph"] = 0
+        else :
+            df3.loc[i, "ordonne_graph"] = 0
         
     return df3
 
@@ -848,38 +856,52 @@ def extraction_df_point_game(big_df) :
     
     # EXTRACTION DES COLONNES NECESSAIRES DU DATAFRAME DU MATCH
     list_columns_to_keep = ["Row", "Match Time", "Event", "Goal Kick Outcome", "Goal Kick Type"]
-    df_point_game = big_df[((big_df["Event"]=="Try") | ((big_df["Event"]=="Goal Kick") & (big_df["Goal Kick Outcome"] == "Goal Kicked" ))) & (big_df["Row"].str.contains("Tries|Kicks", na=False)) ].reset_index(drop=True)
+    #df_point_game = big_df[((big_df["Event"]=="Try") | ((big_df["Event"]=="Goal Kick") & (big_df["Goal Kick Outcome"] == "Goal Kicked" ))) & (big_df["Row"].str.contains("Tries|Kicks", na=False)) ].reset_index(drop=True)
+    df_point_game = big_df[((big_df["Event"]=="Try") | ((big_df["Event"]=="Goal Kick") )) & (big_df["Row"].str.contains("Tries|Kicks", na=False)) ].reset_index(drop=True)
+
     df_point_game = df_point_game[list_columns_to_keep]
-    
+
     # TRANSFORMATION DE LA COLONNE 'MATCH TIME' EN COLONNE 'MINUTES' & 'SECONDES' 
     df_point_game = from_match_time_to_min_and_sec(df_point_game)
-    
+
     # CALCUL DE L'EVOLUTION DU SCORE
     df_point_game["evolution_score"] = None  
     delta_point = 0
-    
+
     for i in range(len(df_point_game)) :
         if "Racing 92" in df_point_game.loc[i, "Row"] :
             if df_point_game.loc[i, "Event"] == "Try" :
-                delta_point += 5
-            elif (df_point_game.loc[i, "Event"] == "Goal Kick") & (df_point_game.loc[i, "Goal Kick Type"] == "Conversion") :
+                if (i != len(df_point_game)-1) :
+                    if (df_point_game.loc[i+1, "Goal Kick Type"] == "Conversion") :
+                        delta_point += 5 
+                    else :
+                        delta_point += 7
+                else :
+                    delta_point += 5 
+            elif (df_point_game.loc[i, "Event"] == "Goal Kick") & (df_point_game.loc[i, "Goal Kick Outcome"] == "Goal Kicked") & (df_point_game.loc[i, "Goal Kick Type"] == "Conversion") :
                 delta_point += 2
-            elif (df_point_game.loc[i, "Event"] == "Goal Kick") & (df_point_game.loc[i, "Goal Kick Type"] == "Penalty Goal") :
+            elif (df_point_game.loc[i, "Event"] == "Goal Kick") & (df_point_game.loc[i, "Goal Kick Outcome"] == "Goal Kicked") & ((df_point_game.loc[i, "Goal Kick Type"] == "Penalty Goal") | (df_point_game.loc[i, "Goal Kick Type"] == "Drop Goal"))  :
                 delta_point += 3
             else :
-                delta_point += 3
+                delta_point += 0
                 
         else :
             if df_point_game.loc[i, "Event"] == "Try" :
-                delta_point += -5
-            elif (df_point_game.loc[i, "Event"] == "Goal Kick") & (df_point_game.loc[i, "Goal Kick Type"] == "Conversion") :
+                if (i != len(df_point_game)-1) :
+                    if (df_point_game.loc[i+1, "Goal Kick Type"] == "Conversion") :
+                        delta_point += -5 
+                    else :
+                        delta_point += -7
+                else :
+                    delta_point += -5 
+            elif (df_point_game.loc[i, "Event"] == "Goal Kick") & (df_point_game.loc[i, "Goal Kick Outcome"] == "Goal Kicked") & (df_point_game.loc[i, "Goal Kick Type"] == "Conversion") :
                 delta_point += -2
-            elif (df_point_game.loc[i, "Event"] == "Goal Kick") & (df_point_game.loc[i, "Goal Kick Type"] == "Penalty Goal") :
+            elif (df_point_game.loc[i, "Event"] == "Goal Kick") & (df_point_game.loc[i, "Goal Kick Outcome"] == "Goal Kicked") & ((df_point_game.loc[i, "Goal Kick Type"] == "Penalty Goal") | (df_point_game.loc[i, "Goal Kick Type"] == "Drop Goal"))  :
                 delta_point += -3
             else :
-                delta_point += -3
+                delta_point += -0
                 
-        df_point_game.loc[i, "evolution_score"] = delta_point  
+        df_point_game.loc[i, "evolution_score"] = delta_point 
         
             
     return df_point_game
@@ -932,7 +954,8 @@ def gametime_graph3(df_match_graph):
     
     ax.axhspan(ymin = 0, ymax = limit, xmin=0, xmax=80, facecolor='#008001', alpha=0.15)
     ax.axhspan(ymax = 0, ymin = - limit, xmin=0, xmax=80, facecolor='darkred', alpha=0.15)
-    ax.scatter(df_kicking_game['Match_Time_2'],[0 for value in df_kicking_game['Match_Time_2']],s=100,color=df_kicking_game['Résultat_Color'])
+    #ax.scatter(df_kicking_game['Match_Time_2'],[0 for value in df_kicking_game['Match_Time_2']],s=50,color=df_kicking_game['Résultat_Color'])
+    ax.scatter(df_kicking_game['Match_Time_2'],df_kicking_game['ordonne_graph'],s=100,color=df_kicking_game['Résultat_Color'])
 
     ax.set_xlim(-1,max_time_graph+1)
     ax.set_ylim(-limit,limit) 
