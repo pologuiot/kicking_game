@@ -126,10 +126,10 @@ def kicking_plot(dataset,dico_player):
 
     dataset[['New X','New Y']] = ''
 
-    for i in range(len(dataset)):
+    #for i in range(len(dataset)):
 
-        dataset['New X'][i] = dataset.X[i] + 10 
-        dataset['New Y'][i] = 70 - dataset.Y[i] 
+    dataset['New X'] = dataset['X'] + 10
+    dataset['New Y'] = 70 - dataset['Y'] 
 
     (fig,ax) = draw_pitch_horizontal() 
     plt.ylim(-2, 72)
@@ -178,10 +178,10 @@ def kicking_plot_players(dataset,list_player,liste_jap):
 
     dataset[['New X','New Y']] = ''
 
-    for i in range(len(dataset)):
+    #for i in range(len(dataset)):
 
-        dataset['New X'][i] = dataset.X[i] + 10 
-        dataset['New Y'][i] = 70 - dataset.Y[i] 
+    dataset['New X'] = dataset['X'] + 10
+    dataset['New Y'] = 70 - dataset['Y'] 
 
     (fig,ax) = draw_pitch_horizontal() 
     plt.ylim(-2, 72)
