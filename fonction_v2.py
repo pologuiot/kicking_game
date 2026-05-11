@@ -716,6 +716,8 @@ def from_match_time_to_min_and_sec(df_already_reduced : pd.DataFrame) -> pd.Data
 
 
 def from_df_match_to_kicking_game(df_match :pd.DataFrame) -> pd.DataFrame :
+
+    print("INFO (fonction 'from_df_match_to_kicking_game') -> Début de l'extraction des données de jeu au pied à partir du df_match.\n")
     
     
     list_columns_to_keep_opta = ["Start time","Player","Match Time","Period","Row","Kick Types"]
@@ -785,22 +787,31 @@ def from_df_match_to_kicking_game(df_match :pd.DataFrame) -> pd.DataFrame :
             df2_candidates = df2_candidates.assign(delta=np.abs(df2_candidates[time_opta] - row1[time_analyst]))
             
             # Filtrage supplémentaire : ne garder que 1 < delta < 6
-            df2_candidates = df2_candidates[(df2_candidates["delta"] > 1.0) & (df2_candidates["delta"] < 6.0)]
+            df2_candidates = df2_candidates[(df2_candidates["delta"] > 0.0) & (df2_candidates["delta"] < 6.0)]
 
-            # S’il reste des candidats valides, on prend le plus proche
+            # S'il reste des candidats valides, on prend le plus proche
             if not df2_candidates.empty:
-                best_match = df2_candidates.loc[df2_candidates["delta"].idxmin()]         
+                best_match = df2_candidates.loc[df2_candidates["delta"].idxmin()]
 
-            # Ajouter les informations
-            match_time_list.append(best_match[label_match_time_opta])
-            start_time_opta_list.append(best_match[time_opta])
-            delta_list.append(round(best_match["delta"],2))
-            player_opta_list.append(best_match[label_kicker_opta])
-            correspondance_city_list.append(best_match[label_kicker_opta] == row1[label_kicker_analyst])
-            period_df2_list.append(best_match[label_mi_temps_opta])
-            correspondance_period_list.append(best_match[label_mi_temps_opta] == row1[label_mi_temps_analyst])
+                # Ajouter les informations
+                match_time_list.append(best_match[label_match_time_opta])
+                start_time_opta_list.append(best_match[time_opta])
+                delta_list.append(round(best_match["delta"],2))
+                player_opta_list.append(best_match[label_kicker_opta])
+                correspondance_city_list.append(best_match[label_kicker_opta] == row1[label_kicker_analyst])
+                period_df2_list.append(best_match[label_mi_temps_opta])
+                correspondance_period_list.append(best_match[label_mi_temps_opta] == row1[label_mi_temps_analyst])
 
-            used_idx_df2.add(best_match.name)
+                used_idx_df2.add(best_match.name)
+            else:
+                # Aucun candidat valide apres filtre delta -> on met NaN
+                match_time_list.append(float('nan'))
+                start_time_opta_list.append(float('nan'))
+                delta_list.append(float('nan'))
+                player_opta_list.append(float('nan'))
+                correspondance_city_list.append(float('nan'))
+                period_df2_list.append(float('nan'))
+                correspondance_period_list.append(float('nan'))
         else:
             match_time_list.append(np.nan)
             start_time_opta_list.append(np.nan)
